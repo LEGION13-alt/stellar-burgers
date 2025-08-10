@@ -1,24 +1,54 @@
 import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
+import { useSelector, useDispatch } from '../../services/store';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  getConstructorState,
+  sendOrderBurgerThunk,
+  resetModal
+} from '../../services/slices/constructorSlice';
+import { getUserStateSelector } from '../../services/slices/userSlice';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
-  const orderRequest = false;
+  const {
+    constructorItems = { bun: null, ingredients: [] },
+    orderModalData,
+    orderRequest
+  } = useSelector(getConstructorState);
 
-  const orderModalData = null;
+  const user = useSelector(getUserStateSelector);
 
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+
+    // Явная проверка на наличие булки
+    if (!constructorItems.bun) {
+      console.error('Не выбрана булка!');
+      return;
+    }
+
+    if (orderRequest) return;
+
+    const ingredientIds = [
+      constructorItems.bun._id, // Теперь безопасно
+      ...constructorItems.ingredients.map((item) => item._id),
+      constructorItems.bun._id
+    ];
+
+    dispatch(sendOrderBurgerThunk(ingredientIds));
   };
-  const closeOrderModal = () => {};
+
+  const closeOrderModal = () => {
+    dispatch(resetModal());
+  };
 
   const price = useMemo(
     () =>
@@ -29,8 +59,6 @@ export const BurgerConstructor: FC = () => {
       ),
     [constructorItems]
   );
-
-  return null;
 
   return (
     <BurgerConstructorUI

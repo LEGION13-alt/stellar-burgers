@@ -11,7 +11,6 @@ import {
   TLoginData
 } from '../../utils/burger-api';
 import { TUser } from '@utils-types';
-import { setCookie, deleteCookie } from '../../utils/cookie';
 
 interface UserState {
   user: TUser | null;
@@ -20,7 +19,7 @@ interface UserState {
   error: string | null;
 }
 
-const initialState: UserState = {
+export const initialState: UserState = {
   user: null,
   isAuthChecked: false,
   loading: false,
@@ -30,49 +29,33 @@ const initialState: UserState = {
 //регистрация
 export const registerUserThunk = createAsyncThunk(
   'user/registerUser',
-  async (registerData: TRegisterData) => await registerUserApi(registerData)
+  (data: TRegisterData) => registerUserApi(data)
 );
 //логин
 export const loginUserThunk = createAsyncThunk(
   'user/loginUser',
-  async (loginData: TLoginData) => {
-    const data = await loginUserApi(loginData);
-    if (!data.success) {
-      return data;
-    }
-    setCookie('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    return data; //user;
-  }
+  (data: TLoginData) => loginUserApi(data)
 );
+
 //логаут
-export const logoutUserThunk = createAsyncThunk('user/logoutUser', async () => {
-  await logoutApi();
-  deleteCookie('accessToken');
-  localStorage.removeItem('refreshToken');
-});
+export const logoutUserThunk = createAsyncThunk('user/logoutUser', logoutApi);
 
 //обновить польз
 export const updateUserThunk = createAsyncThunk(
   'user/updateUser',
-  (userData: Partial<TRegisterData>) => updateUserApi(userData)
+  (user: Partial<TRegisterData>) => updateUserApi(user)
 );
 //забыл пароль
 export const forgotPasswordThunk = createAsyncThunk(
   'user/forgotPassword',
-  async (email: string) => {
-    await forgotPasswordApi({ email });
-    return true;
-  }
+  (data: { email: string }) => forgotPasswordApi(data)
 );
 //сброс пароля
 export const resetPasswordThunk = createAsyncThunk(
   'user/resetPassword',
-  async (data: { password: string; token: string }) => {
-    await resetPasswordApi(data);
-    return true;
-  }
+  (data: { password: string; token: string }) => resetPasswordApi(data)
 );
+
 //получить польз
 export const getUserThunk = createAsyncThunk('user/getUser', getUserApi);
 
@@ -80,9 +63,6 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    authCheck: (state) => {
-      state.isAuthChecked = true;
-    },
     clearError: (state) => {
       state.error = null;
     }
@@ -91,7 +71,8 @@ const userSlice = createSlice({
     getUserStateSelector: (state) => state,
     getUserSelector: (state) => state.user,
     isAuthCheckSelector: (state) => state.isAuthChecked,
-    getUserErrorSelector: (state) => state.error
+    getUserErrorSelector: (state) => state.error,
+    getUserLoadingSelector: (state) => state.loading
   },
   extraReducers: (builder) => {
     builder
@@ -202,14 +183,15 @@ const userSlice = createSlice({
   }
 });
 
-export const { authCheck, clearError } = userSlice.actions;
+export const { clearError } = userSlice.actions;
 
 // Селекторы
 export const {
   getUserStateSelector,
   getUserSelector,
   isAuthCheckSelector,
-  getUserErrorSelector
+  getUserErrorSelector,
+  getUserLoadingSelector
 } = userSlice.selectors;
 
 export default userSlice.reducer;

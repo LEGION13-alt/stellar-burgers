@@ -8,7 +8,7 @@ interface IngredientsState {
   error: string | null;
 }
 
-const initialState: IngredientsState = {
+export const initialState: IngredientsState = {
   ingredients: [],
   loading: false,
   error: null
@@ -22,10 +22,11 @@ export const getIngredientsThunk = createAsyncThunk(
 const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,
-  selectors: {
-    getIngredientState: (state) => state
-  },
   reducers: {},
+  selectors: {
+    getIngredientState: (state) => state,
+    getIngredientsStateLoading: (state) => state.loading
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getIngredientsThunk.pending, (state) => {
@@ -44,5 +45,6 @@ const ingredientsSlice = createSlice({
   }
 });
 
-export const { getIngredientState } = ingredientsSlice.selectors;
+export const { getIngredientState, getIngredientsStateLoading } =
+  ingredientsSlice.selectors;
 export default ingredientsSlice.reducer;

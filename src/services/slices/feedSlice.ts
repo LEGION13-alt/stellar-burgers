@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getFeedsApi } from '../../utils/burger-api';
+import { getFeedsApi, getOrdersApi } from '../../utils/burger-api';
 import { TOrder } from '@utils-types';
 
-interface FeedState {
+export interface FeedState {
   orders: TOrder[];
   total: number;
   totalToday: number;
@@ -20,12 +20,19 @@ export const initialState: FeedState = {
 
 export const getFeedThunk = createAsyncThunk('feed/getFeed', getFeedsApi);
 
+export const getOrdersAllThunk = createAsyncThunk(
+  'feed/getFeedProfile',
+  getOrdersApi
+);
+
 export const feedSlice = createSlice({
   name: 'feed',
   initialState,
   reducers: {},
   selectors: {
-    getFeedState: (state) => state
+    getFeedState: (state) => state,
+    getOrdersAllState: (state) => state.orders
+    //getFeedLoading: (state) => state.loading
   },
   extraReducers: (builder) => {
     builder
@@ -43,9 +50,22 @@ export const feedSlice = createSlice({
       .addCase(getFeedThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message as string;
+      })
+      .addCase(getOrdersAllThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getOrdersAllThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.orders = action.payload;
+      })
+      .addCase(getOrdersAllThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
       });
   }
 });
 
-export const { getFeedState } = feedSlice.selectors;
+export const { getFeedState, getOrdersAllState } = feedSlice.selectors;
 export default feedSlice.reducer;
