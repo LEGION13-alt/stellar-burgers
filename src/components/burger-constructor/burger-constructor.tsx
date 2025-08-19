@@ -6,9 +6,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   getConstructorState,
   sendOrderBurgerThunk,
-  resetModal
+  resetModal,
+  setRequest
 } from '../../services/slices/constructorSlice';
-import { getUserStateSelector } from '../../services/slices/userSlice';
+import { getUserSelector } from '../../services/slices/userSlice';
 
 export const BurgerConstructor: FC = () => {
   const navigate = useNavigate();
@@ -21,24 +22,31 @@ export const BurgerConstructor: FC = () => {
     orderRequest
   } = useSelector(getConstructorState);
 
-  const user = useSelector(getUserStateSelector);
+  const user = useSelector(getUserSelector);
 
   const onOrderClick = () => {
+    //переброс не зарег.польз на стр.рег
     if (!user) {
       navigate('/login', { state: { from: location } });
       return;
     }
 
-    // Явная проверка на наличие булки
+    //проверка на наличие булки
     if (!constructorItems.bun) {
       console.error('Не выбрана булка!');
+      return;
+    }
+
+    //проверка на начинку
+    if (constructorItems.ingredients.length === 0) {
+      console.error('Добавьте начинку для заказа!');
       return;
     }
 
     if (orderRequest) return;
 
     const ingredientIds = [
-      constructorItems.bun._id, // Теперь безопасно
+      constructorItems.bun._id,
       ...constructorItems.ingredients.map((item) => item._id),
       constructorItems.bun._id
     ];
@@ -47,6 +55,7 @@ export const BurgerConstructor: FC = () => {
   };
 
   const closeOrderModal = () => {
+    dispatch(setRequest(false));
     dispatch(resetModal());
   };
 

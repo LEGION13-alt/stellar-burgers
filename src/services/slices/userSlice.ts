@@ -11,6 +11,7 @@ import {
   TLoginData
 } from '../../utils/burger-api';
 import { TUser } from '@utils-types';
+import { deleteCookie, setCookie } from '../../utils/cookie';
 
 interface UserState {
   user: TUser | null;
@@ -45,12 +46,12 @@ export const updateUserThunk = createAsyncThunk(
   'user/updateUser',
   (user: Partial<TRegisterData>) => updateUserApi(user)
 );
-//забыл пароль
+//пароль
 export const forgotPasswordThunk = createAsyncThunk(
   'user/forgotPassword',
   (data: { email: string }) => forgotPasswordApi(data)
 );
-//сброс пароля
+
 export const resetPasswordThunk = createAsyncThunk(
   'user/resetPassword',
   (data: { password: string; token: string }) => resetPasswordApi(data)
@@ -86,6 +87,8 @@ const userSlice = createSlice({
         state.loading = false;
         state.isAuthChecked = true;
         state.error = null;
+        setCookie('accessToken', action.payload.accessToken);
+        localStorage.setItem('refreshToken', action.payload.refreshToken);
       })
       .addCase(registerUserThunk.rejected, (state, action) => {
         state.loading = false;
@@ -100,7 +103,10 @@ const userSlice = createSlice({
       .addCase(loginUserThunk.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.loading = false;
+        state.error = null;
         state.isAuthChecked = true;
+        setCookie('accessToken', action.payload.accessToken);
+        localStorage.setItem('refreshToken', action.payload.refreshToken);
       })
       .addCase(loginUserThunk.rejected, (state, action) => {
         state.loading = false;
@@ -117,6 +123,8 @@ const userSlice = createSlice({
         state.loading = false;
         state.error = null;
         state.isAuthChecked = false;
+        deleteCookie('accessToken');
+        localStorage.removeItem('refreshToken');
       })
       .addCase(logoutUserThunk.rejected, (state, action) => {
         state.loading = false;
@@ -179,13 +187,15 @@ const userSlice = createSlice({
       .addCase(getUserThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message as string;
+        if (action.error.message?.includes('401')) {
+          state.user = null;
+          state.isAuthChecked = true;
+        }
       });
   }
 });
 
 export const { clearError } = userSlice.actions;
-
-// Селекторы
 export const {
   getUserStateSelector,
   getUserSelector,

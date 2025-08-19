@@ -1,37 +1,33 @@
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from '../../services/store';
+import { useEffect } from 'react';
+import { getIngredientsThunk } from '../../services/slices/ingredientsSlice';
+import { getUserThunk } from '../../services/slices/userSlice';
 import {
   ConstructorPage,
   Feed,
-  ForgotPassword,
   Login,
-  NotFound404,
+  Register,
+  ForgotPassword,
+  ResetPassword,
   Profile,
   ProfileOrders,
-  Register,
-  ResetPassword
-} from '@pages';
-
-import '../../index.css';
+  NotFound404
+} from '../../pages';
+import { AppHeader, Modal, OrderInfo, IngredientDetails } from '../';
 import styles from './app.module.css';
+import { ProtectedRoute } from '../protected-route';
 
-import { AppHeader, Modal, OrderInfo, IngredientDetails } from '@components';
-
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-
-import { ProtectedRoute } from '../protected-route/protected-route';
-import { useDispatch } from '../../services/store';
-import { useEffect } from 'react';
-import { getUserThunk } from '../../services/slices/userSlice';
-import { getIngredientsThunk } from '../../services/slices/ingredientsSlice';
-
-const App = () => {
+export const App = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const background = location.state?.background;
 
+  // Инициализация приложения
   useEffect(() => {
-    dispatch(getUserThunk());
     dispatch(getIngredientsThunk());
+    dispatch(getUserThunk());
   }, [dispatch]);
 
   const handleModalClose = () => {
@@ -43,11 +39,13 @@ const App = () => {
       <AppHeader />
 
       <Routes location={background || location}>
+        {/* Публичные маршруты (доступны всем) */}
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route path='/feed/:number' element={<OrderInfo />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
 
+        {/* Маршруты только для НЕавторизованных пользователей */}
         <Route element={<ProtectedRoute onlyUnAuth={false} />}>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
@@ -55,6 +53,7 @@ const App = () => {
           <Route path='/reset-password' element={<ResetPassword />} />
         </Route>
 
+        {/* Маршруты только для авторизованных пользователей */}
         <Route element={<ProtectedRoute onlyUnAuth />}>
           <Route path='/profile'>
             <Route index element={<Profile />} />
@@ -63,9 +62,11 @@ const App = () => {
           </Route>
         </Route>
 
+        {/* 404 */}
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
+      {/* Модальные окна (открываются поверх текущего маршрута) */}
       {background && (
         <Routes>
           <Route
@@ -76,17 +77,10 @@ const App = () => {
               </Modal>
             }
           />
-          <Route
-            path='/feed/:number'
-            element={
-              <Modal title='Детали заказа' onClose={handleModalClose}>
-                <OrderInfo />
-              </Modal>
-            }
-          />
+
           <Route element={<ProtectedRoute onlyUnAuth />}>
             <Route
-              path='/profile/orders/:number'
+              path='/feed/:number'
               element={
                 <Modal title='Детали заказа' onClose={handleModalClose}>
                   <OrderInfo />
@@ -94,9 +88,18 @@ const App = () => {
               }
             />
           </Route>
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <Modal title='Детали заказа' onClose={handleModalClose}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
         </Routes>
       )}
     </div>
   );
 };
+
 export default App;

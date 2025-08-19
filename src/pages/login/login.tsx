@@ -3,10 +3,8 @@ import { LoginUI } from '@ui-pages';
 import { useDispatch, useSelector } from '../../services/store';
 import {
   getUserErrorSelector,
-  clearError,
   loginUserThunk
 } from '../../services/slices/userSlice';
-import { useEffect } from 'react';
 
 export const Login: FC = () => {
   const [email, setEmail] = useState('');
@@ -22,10 +20,6 @@ export const Login: FC = () => {
     }
     dispatch(loginUserThunk({ email, password }));
   };
-
-  useEffect(() => {
-    dispatch(clearError());
-  }, [dispatch]);
 
   return (
     <LoginUI

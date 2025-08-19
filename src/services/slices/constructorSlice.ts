@@ -84,12 +84,15 @@ export const constructorSlice = createSlice({
     }
   },
   selectors: {
-    getConstructorState: (state) => state
+    getConstructorState: (state) => state,
+    getConstructorLoading: (state) => state.loading,
+    getOrderRequest: (state) => state.orderRequest
   },
   extraReducers: (builder) => {
     builder
       .addCase(sendOrderBurgerThunk.pending, (state) => {
         state.loading = true;
+        state.orderRequest = true;
         state.error = null;
       })
       .addCase(sendOrderBurgerThunk.fulfilled, (state, action) => {
@@ -101,10 +104,10 @@ export const constructorSlice = createSlice({
           bun: null,
           ingredients: []
         };
-        console.log(action.payload);
       })
       .addCase(sendOrderBurgerThunk.rejected, (state, action) => {
         state.loading = false;
+        state.orderRequest = false;
         state.error = action.error.message as string;
       });
   }
@@ -119,5 +122,6 @@ export const {
   resetModal
 } = constructorSlice.actions;
 
-export const { getConstructorState } = constructorSlice.selectors;
+export const { getConstructorState, getConstructorLoading, getOrderRequest } =
+  constructorSlice.selectors;
 export default constructorSlice.reducer;
