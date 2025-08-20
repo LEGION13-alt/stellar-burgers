@@ -30,13 +30,10 @@ export const initialState: UserState = {
 //регистрация
 export const registerUserThunk = createAsyncThunk(
   'user/registerUser',
-  (data: TRegisterData) => registerUserApi(data)
+  registerUserApi
 );
 //логин
-export const loginUserThunk = createAsyncThunk(
-  'user/loginUser',
-  (data: TLoginData) => loginUserApi(data)
-);
+export const loginUserThunk = createAsyncThunk('user/loginUser', loginUserApi);
 
 //логаут
 export const logoutUserThunk = createAsyncThunk('user/logoutUser', logoutApi);
@@ -44,17 +41,17 @@ export const logoutUserThunk = createAsyncThunk('user/logoutUser', logoutApi);
 //обновить польз
 export const updateUserThunk = createAsyncThunk(
   'user/updateUser',
-  (user: Partial<TRegisterData>) => updateUserApi(user)
+  updateUserApi
 );
 //пароль
 export const forgotPasswordThunk = createAsyncThunk(
   'user/forgotPassword',
-  (data: { email: string }) => forgotPasswordApi(data)
+  forgotPasswordApi
 );
 
 export const resetPasswordThunk = createAsyncThunk(
   'user/resetPassword',
-  (data: { password: string; token: string }) => resetPasswordApi(data)
+  resetPasswordApi
 );
 
 //получить польз

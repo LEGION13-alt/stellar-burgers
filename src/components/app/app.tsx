@@ -77,10 +77,17 @@ export const App = () => {
               </Modal>
             }
           />
-
+          <Route
+            path='/feed/:number'
+            element={
+              <Modal title='Детали заказа' onClose={handleModalClose}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
           <Route element={<ProtectedRoute onlyUnAuth />}>
             <Route
-              path='/feed/:number'
+              path='/profile/orders/:number'
               element={
                 <Modal title='Детали заказа' onClose={handleModalClose}>
                   <OrderInfo />
@@ -88,14 +95,6 @@ export const App = () => {
               }
             />
           </Route>
-          <Route
-            path='/profile/orders/:number'
-            element={
-              <Modal title='Детали заказа' onClose={handleModalClose}>
-                <OrderInfo />
-              </Modal>
-            }
-          />
         </Routes>
       )}
     </div>

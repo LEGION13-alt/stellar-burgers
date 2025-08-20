@@ -1,7 +1,6 @@
 import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
-import { useDispatch } from '../../services/store';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from '../../services/store';
 import {
   getUserErrorSelector,
   registerUserThunk

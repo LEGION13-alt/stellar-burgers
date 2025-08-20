@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getOrdersApi, getOrderByNumberApi } from '../../utils/burger-api';
+import { getOrderByNumberApi } from '../../utils/burger-api';
 import { TOrder } from '@utils-types';
 
 interface OrderState {
@@ -19,7 +19,7 @@ export const initialState: OrderState = {
 // заказ по номеру
 export const getOrderThunk = createAsyncThunk(
   'feed/getOrderByNumber',
-  async (number: number) => getOrderByNumberApi(number)
+  getOrderByNumberApi
 );
 
 export const orderSlice = createSlice({
