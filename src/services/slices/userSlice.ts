@@ -1,0 +1,204 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  registerUserApi,
+  loginUserApi,
+  logoutApi,
+  getUserApi,
+  updateUserApi,
+  forgotPasswordApi,
+  resetPasswordApi,
+  TRegisterData,
+  TLoginData
+} from '../../utils/burger-api';
+import { TUser } from '@utils-types';
+import { deleteCookie, setCookie } from '../../utils/cookie';
+
+interface UserState {
+  user: TUser | null;
+  isAuthChecked: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialState: UserState = {
+  user: null,
+  isAuthChecked: false,
+  loading: false,
+  error: null
+};
+
+//регистрация
+export const registerUserThunk = createAsyncThunk(
+  'user/registerUser',
+  registerUserApi
+);
+//логин
+export const loginUserThunk = createAsyncThunk('user/loginUser', loginUserApi);
+
+//логаут
+export const logoutUserThunk = createAsyncThunk('user/logoutUser', logoutApi);
+
+//обновить польз
+export const updateUserThunk = createAsyncThunk(
+  'user/updateUser',
+  updateUserApi
+);
+//пароль
+export const forgotPasswordThunk = createAsyncThunk(
+  'user/forgotPassword',
+  forgotPasswordApi
+);
+
+export const resetPasswordThunk = createAsyncThunk(
+  'user/resetPassword',
+  resetPasswordApi
+);
+
+//получить польз
+export const getUserThunk = createAsyncThunk('user/getUser', getUserApi);
+
+const userSlice = createSlice({
+  name: 'user',
+  initialState,
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    }
+  },
+  selectors: {
+    getUserStateSelector: (state) => state,
+    getUserSelector: (state) => state.user,
+    isAuthCheckSelector: (state) => state.isAuthChecked,
+    getUserErrorSelector: (state) => state.error,
+    getUserLoadingSelector: (state) => state.loading
+  },
+  extraReducers: (builder) => {
+    builder
+      // Регистрация
+      .addCase(registerUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUserThunk.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.isAuthChecked = true;
+        state.error = null;
+        setCookie('accessToken', action.payload.accessToken);
+        localStorage.setItem('refreshToken', action.payload.refreshToken);
+      })
+      .addCase(registerUserThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+
+      // Логин
+      .addCase(loginUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUserThunk.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.error = null;
+        state.isAuthChecked = true;
+        setCookie('accessToken', action.payload.accessToken);
+        localStorage.setItem('refreshToken', action.payload.refreshToken);
+      })
+      .addCase(loginUserThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+
+      // Логаут
+      .addCase(logoutUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUserThunk.fulfilled, (state) => {
+        state.user = null;
+        state.loading = false;
+        state.error = null;
+        state.isAuthChecked = false;
+        deleteCookie('accessToken');
+        localStorage.removeItem('refreshToken');
+      })
+      .addCase(logoutUserThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+
+      // Обновление пользователя
+      .addCase(updateUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserThunk.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.error = null;
+        state.isAuthChecked = true;
+      })
+      .addCase(updateUserThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+
+      // Запрос на восстановление пароля
+      .addCase(forgotPasswordThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(forgotPasswordThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(forgotPasswordThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+
+      // Сброс пароля
+      .addCase(resetPasswordThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetPasswordThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(resetPasswordThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+      })
+      // Получение пользователя
+      .addCase(getUserThunk.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getUserThunk.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.error = null;
+        state.isAuthChecked = true;
+      })
+      .addCase(getUserThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message as string;
+        if (action.error.message?.includes('401')) {
+          state.user = null;
+          state.isAuthChecked = true;
+        }
+      });
+  }
+});
+
+export const { clearError } = userSlice.actions;
+export const {
+  getUserStateSelector,
+  getUserSelector,
+  isAuthCheckSelector,
+  getUserErrorSelector,
+  getUserLoadingSelector
+} = userSlice.selectors;
+
+export default userSlice.reducer;
