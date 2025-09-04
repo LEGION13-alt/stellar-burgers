@@ -1,27 +1,21 @@
-import ingredients from '../fixtures/ingredients.json';
-import user from '../fixtures/user.json';
 import order from '../fixtures/order.json';
 
 describe('Конструктор бургеров', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/ingredients', {
-      statusCode: 200,
-      body: ingredients
+      fixture: 'ingredients.json'
     }).as('getIngredients');
 
     cy.intercept('GET', 'api/auth/user', {
-      statusCode: 200,
-      body: user
+      fixture: 'user.json'
     }).as('getUser');
 
     cy.intercept('POST', 'api/auth/login', {
-      statusCode: 200,
-      body: user
+      fixture: 'user.json'
     }).as('login');
 
     cy.intercept('POST', 'api/orders', {
-      statusCode: 200,
-      body: order
+      fixture: 'order.json'
     }).as('createOrder');
 
     // авторизация
@@ -39,11 +33,45 @@ describe('Конструктор бургеров', () => {
   });
 
   it('Добавление ингредиентов в конструктор', () => {
-    cy.get('[data-cy="ingredient-bun"]').first().children('button').click();
-    cy.get('[data-cy="ingredient-main"]').first().children('button').click();
-    cy.get('[data-cy="ingredient-sauce"]').first().children('button').click();
-    cy.get('[data-cy="constructor-bun"]').should('exist');
-    cy.get('[data-cy="constructor-ingredient"]').should('have.length', 2);
+    //  данные ификстуры
+    cy.fixture('ingredients.json').then((ingredientsData: any) => {
+      const buns = ingredientsData.data.filter(
+        (ing: any) => ing.type === 'bun'
+      );
+      const mains = ingredientsData.data.filter(
+        (ing: any) => ing.type === 'main'
+      );
+      const sauces = ingredientsData.data.filter(
+        (ing: any) => ing.type === 'sauce'
+      );
+
+      const firstBun = buns[0];
+      const firstMain = mains[0];
+      const firstSauce = sauces[0];
+
+      // конструктор пуст
+      cy.get('[data-cy="constructor-bun"]').should('not.exist');
+      cy.get('[data-cy="constructor-ingredient"]').should('have.length', 0);
+
+      // добавляем ингредиенты
+      cy.get('[data-cy="ingredient-bun"]').first().children('button').click();
+      cy.get('[data-cy="ingredient-main"]').first().children('button').click();
+      cy.get('[data-cy="ingredient-sauce"]').first().children('button').click();
+
+      // проверяем наличие и содержимое
+      cy.get('[data-cy="constructor-bun"]')
+        .should('exist')
+        .and('contain', firstBun.name);
+
+      cy.get('[data-cy="constructor-ingredient"]')
+        .should('have.length', 2)
+        .first()
+        .should('contain', firstMain.name);
+
+      cy.get('[data-cy="constructor-ingredient"]')
+        .last()
+        .should('contain', firstSauce.name);
+    });
   });
 
   it('Замена булки в конструкторе', () => {
@@ -70,10 +98,21 @@ describe('Конструктор бургеров', () => {
     );
   });
 
-  it('Открытие и закрытие модального окна ингредиента по крестику', () => {
-    cy.get('[data-cy="ingredient-bun"]').first().click();
-    cy.get('[data-cy="modal"]').should('be.visible');
-    cy.get('[data-cy="modal-title"]').should('contain', 'Детали ингредиента');
+  it('Закрытие модального окна ингредиента по крестику', () => {
+    // данные из фикстуры
+    cy.fixture('ingredients.json').then((ingredientsData: any) => {
+      const firstBun = ingredientsData.data.find(
+        (ing: any) => ing.type === 'bun'
+      );
+
+      cy.get('[data-cy="ingredient-bun"]').first().click();
+
+      cy.get('[data-cy="modal"]').should('be.visible');
+      cy.get('[data-cy="modal-title"]').should('contain', 'Детали ингредиента');
+
+      // проверка данных ингредиента в модальном окне
+      cy.get('[data-cy="modal"]').should('contain', firstBun.name);
+    });
 
     // закрытие по крестику
     cy.get('[data-cy="modal-close"]').click();
@@ -81,8 +120,18 @@ describe('Конструктор бургеров', () => {
   });
 
   it('Закрытие модального окна ингредиента по оверлею', () => {
-    cy.get('[data-cy="ingredient-sauce"]').first().click();
-    cy.get('[data-cy="modal"]').should('be.visible');
+    cy.fixture('ingredients.json').then((ingredientsData: any) => {
+      const firstSauce = ingredientsData.data.find(
+        (ing: any) => ing.type === 'sauce'
+      );
+
+      cy.get('[data-cy="ingredient-sauce"]').first().click();
+
+      cy.get('[data-cy="modal"]').should('be.visible');
+      cy.get('[data-cy="modal-title"]').should('contain', 'Детали ингредиента');
+
+      cy.get('[data-cy="modal"]').should('contain', firstSauce.name);
+    });
 
     // закрытие по оверлею
     cy.get('[data-cy="modal-overlay"]').click({ force: true });
