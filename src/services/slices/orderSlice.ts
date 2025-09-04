@@ -37,7 +37,7 @@ export const orderSlice = createSlice({
       })
       .addCase(getOrderThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.order = action.payload.orders[0];
+        state.order = action.payload.orders[0] || null;
         state.error = null;
       })
       .addCase(getOrderThunk.rejected, (state, action) => {
