@@ -1,0 +1,10 @@
+{
+  "build": {
+    "env": {
+      "BURGER_API_URL": "https://norma.nomoreparties.space/api"
+    }
+  },
+  "env": {
+    "BURGER_API_URL": "https://norma.nomoreparties.space/api"
+  }
+}
