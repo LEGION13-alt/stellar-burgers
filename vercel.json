@@ -1,10 +1,10 @@
 {
   "build": {
     "env": {
-      "BURGER_API_URL": "https://norma.nomoreparties.space/api"
+      "BURGER_API_URL": "https://norma.education-services.ru/api"
     }
   },
   "env": {
-    "BURGER_API_URL": "https://norma.nomoreparties.space/api"
+    "BURGER_API_URL": "https://norma.education-services.ru/api"
   }
 }
