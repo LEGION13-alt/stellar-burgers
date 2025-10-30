@@ -22,16 +22,16 @@
  ## Запуск проекта
  
 ```bash
-# Клонировать репозиторий
+1. Клонировать репозиторий
 git clone https://github.com/LEGION13-alt/stellar-burgers.git
 
-# Установить зависимости
+2. Установить зависимости
 npm install
 
-# Запуск в development режиме (с API)
+3. Запуск в development режиме (с API)
 npm start
 
-# Запуск тестов
+4. Запуск тестов
 npm test
 npm run cypress:open
 
